@@ -120,6 +120,15 @@ var scraperXML string = `
  * Create a REST API to return structured data from website with
    schema.org markup
 
+# To Do
+
+ * Implement scraping string arrays
+ * Document XML document format
+ * Validate XML conforms to the format
+ * More documentation and examples
+ * Implement support for custom filters?
+ * Implement scraping numbers and nulls
+
 # Acknowledgements
 
 Making this wouldn't have been so easy without the fantastic work from
