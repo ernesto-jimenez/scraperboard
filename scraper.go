@@ -26,6 +26,7 @@ func NewScraperFromFile(name string) (Scraper, error) {
 	return NewScraper(file)
 }
 
+// TODO: Validate XML: tags have required attributes, filter chain works
 func NewScraper(r io.Reader) (scraper Scraper, err error) {
 	err = xml.NewDecoder(r).Decode(&scraper)
 	return
@@ -146,6 +147,7 @@ func (s *Property) scrape(sel *goquery.Selection) (key string, value interface{}
 	return
 }
 
+// TODO: Refactor filters using reflection to avoid type casting
 func (f *Filter) run(val interface{}) (result interface{}, err error) {
 	switch f.Type {
 	case "first":
