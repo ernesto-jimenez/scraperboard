@@ -5,9 +5,12 @@ The key feautres include:
  - Generate JSON from HTML based on the defined scraper
  - Create REST APIs to serve the scraped JSON
 
-# Basic usage
+# Examples
 
-A command line tool to extract top results from a Google search.
-
-Create a REST API to query top results from a google search.
+ * [A command line tool to extract top results from a Google
+   search](examples/google-cli)
+ * [Create a REST API to query top results from a google
+   search](examples/google-api)
+ * Create a REST API to return structured data from website with
+   schema.org markup
 
