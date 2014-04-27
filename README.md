@@ -1,3 +1,5 @@
+**This is an early release to gather feedback. The API and XML format will probably change. I would love to know your thoughts, so [email me](mailto:erjica@gmail.com) or [send me a tweet](https://twitter.com/ernesto_jimenez)**
+
 Scraperboard allows you to define scrapers declaratively.
 
 The key feautres include:
