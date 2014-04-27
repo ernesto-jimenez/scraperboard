@@ -127,7 +127,7 @@ var scraperXML string = `
  * Validate XML conforms to the format
  * More documentation and examples
  * Implement support for custom filters?
- * Implement scraping numbers and nulls
+ * Implement output numbers and nulls
 
 # Acknowledgements
 
