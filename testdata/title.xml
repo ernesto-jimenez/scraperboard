@@ -1,0 +1,4 @@
+<Scraper>
+  <!-- Parser for simple.html -->
+  <Property name="title" selector="h1"/>
+</Scraper>

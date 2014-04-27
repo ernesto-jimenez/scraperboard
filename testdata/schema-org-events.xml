@@ -1,0 +1,9 @@
+<Scraper>
+  <Each name="events" selector='[itemscope][itemtype="http://schema.org/Event"]'>
+    <Property name="name" selector="[itemprop=name]"/>
+    <Property name="startDate" selector="[itemprop=startDate]">
+      <Filter type="first"/>
+      <Filter type="attr" argument="content"/>
+    </Property>
+  </Each>
+</Scraper>

@@ -1,0 +1,6 @@
+<Scraper>
+  <!-- Parser for simple.html -->
+  <Each name="links" selector="ul li">
+    <Property name="text" selector="a"/>
+  </Each>
+</Scraper>
