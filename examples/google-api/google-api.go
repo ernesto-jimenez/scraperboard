@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	getUrl := func(req *http.Request) string {
+	getURL := func(req *http.Request) string {
 		query := req.URL.Query().Get("q")
 		fmt.Println("Searching for:", query)
 		return fmt.Sprintf("https://www.google.com/search?q=%s", url.QueryEscape(query))
@@ -21,7 +21,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	http.HandleFunc("/search", scraper.HttpHandlerFunc(getUrl))
+	http.HandleFunc("/search", scraper.NewHTTPHandlerFunc(getURL))
 	fmt.Println("Started API server. You can test it in http://0.0.0.0:12345/search?q=scraperboard")
 	err = http.ListenAndServe(":12345", nil)
 	if err != nil {

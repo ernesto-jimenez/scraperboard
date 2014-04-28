@@ -5,9 +5,11 @@ import (
 	"net/http"
 )
 
-func (s *Scraper) HttpHandlerFunc(getUrl func(*http.Request) string) http.HandlerFunc {
+// NewHTTPHandlerFunc constructs an http.HandlerFunc function to expose a JSON API from the scraper. It takes a getURL function which will take each request and return the URL that should be scrapped.
+// e.g.: http.Request could contain a Query Parameter with the ID to be scrapped.
+func (s *Scraper) NewHTTPHandlerFunc(getURL func(*http.Request) string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		res, err := s.ScrapeFromUrl(getUrl(req))
+		res, err := s.ScrapeFromURL(getURL(req))
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

@@ -4,8 +4,9 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func (s *Scraper) ExtractFromUrl(url string, target interface{}) (err error) {
-	res, err := s.ScrapeFromUrl(url)
+// ExtractFromURL scrapes the HTML served in the specified URL into a golang struct
+func (s *Scraper) ExtractFromURL(url string, target interface{}) (err error) {
+	res, err := s.ScrapeFromURL(url)
 	if err != nil {
 		return
 	}

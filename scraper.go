@@ -14,10 +14,12 @@ import (
 	"time"
 )
 
+// NewScraperFromString constructs a Scraper based on the XML passed as a string
 func NewScraperFromString(str string) (Scraper, error) {
 	return NewScraper(strings.NewReader(str))
 }
 
+// NewScraperFromFile constructs a Scraper reading the XML from the file provided
 func NewScraperFromFile(name string) (Scraper, error) {
 	file, err := os.Open(name)
 	if err != nil {
@@ -26,13 +28,15 @@ func NewScraperFromFile(name string) (Scraper, error) {
 	return NewScraper(file)
 }
 
-// TODO: Validate XML: tags have required attributes, filter chain works
+// NewScraper constructs a Scraper reading the XML from the provided io.Reader
 func NewScraper(r io.Reader) (scraper Scraper, err error) {
+	// TODO: Validate XML: tags have required attributes, filter chain works
 	err = xml.NewDecoder(r).Decode(&scraper)
 	return
 }
 
-func (s *Scraper) ScrapeFromUrl(url string) (result map[string]interface{}, err error) {
+// ScrapeFromURL scrapes the provided URL and returns a map[string]interface{} that can be encoded into JSON or go structs
+func (s *Scraper) ScrapeFromURL(url string) (result map[string]interface{}, err error) {
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		return
@@ -40,6 +44,7 @@ func (s *Scraper) ScrapeFromUrl(url string) (result map[string]interface{}, err 
 	return s.scrape(doc)
 }
 
+// ScrapeFromResponse scrapes the HTML in the provided http.Response Body and returns a map[string]interface{} that can be encoded into JSON or go structs
 func (s *Scraper) ScrapeFromResponse(res *http.Response) (result map[string]interface{}, err error) {
 	doc, err := goquery.NewDocumentFromResponse(res)
 	if err != nil {
@@ -48,6 +53,7 @@ func (s *Scraper) ScrapeFromResponse(res *http.Response) (result map[string]inte
 	return s.scrape(doc)
 }
 
+// ScrapeFromReader scrapes the HTML from the provided io.Reader and returns a map[string]interface{} that can be encoded into JSON or go structs
 func (s *Scraper) ScrapeFromReader(reader io.Reader) (result map[string]interface{}, err error) {
 	doc, err := goquery.NewDocumentFromReader(reader)
 	if err != nil {
@@ -175,24 +181,28 @@ func defaultFilterList() []Filter {
 	}
 }
 
+// Scraper defines a scraper template to extract structured data from HTML documents
 type Scraper struct {
 	Property
 	EachList     []Each     `xml:"Each"`
 	PropertyList []Property `xml:"Property"`
 }
 
+// Each tags allow you to extract arrays of structured data (e.g: lists of reviews)
 type Each struct {
 	Property
 	sortBy       string     `xml:"sortBy,attr"`
 	PropertyList []Property `xml:"Property"`
 }
 
+// Property defines a property to be extracted
 type Property struct {
 	Name       string   `xml:"name,attr"`
 	Selector   string   `xml:"selector,attr"`
 	FilterList []Filter `xml:"Filter"`
 }
 
+// Filter allows you to shape the values for a property
 type Filter struct {
 	Type     string `xml:"type,attr"`
 	Argument string `xml:"argument,attr"`

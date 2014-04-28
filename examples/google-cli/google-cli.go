@@ -12,28 +12,30 @@ func main() {
 	flag.Parse()
 
 	query := strings.Join(flag.Args(), " ")
-	searchUrl := fmt.Sprintf("https://www.google.com/search?q=%s", url.QueryEscape(query))
+	searchURL := fmt.Sprintf("https://www.google.com/search?q=%s", url.QueryEscape(query))
 
 	scraper, _ := scraperboard.NewScraperFromString(scraperXML)
 
 	var response Response
-	scraper.ExtractFromUrl(searchUrl, &response)
+	scraper.ExtractFromURL(searchURL, &response)
 
 	for _, result := range response.Results {
-		fmt.Printf("%s:\n\t%s\n", result.Title, result.Url)
+		fmt.Printf("%s:\n\t%s\n", result.Title, result.URL)
 	}
 }
 
+// Response contains an array of google results (Result)
 type Response struct {
 	Results []Result
 }
 
+// Result has a Title and URL
 type Result struct {
 	Title string
-	Url   string
+	URL   string
 }
 
-var scraperXML string = `
+var scraperXML = `
 	<Scraper>
 		<Each name="results" selector="#search ol > li">
 			<Property name="title" selector="h3 a"/>
