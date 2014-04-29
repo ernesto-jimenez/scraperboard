@@ -20,7 +20,7 @@ func markdownify(s *goquery.Selection) string {
 	for _, n := range s.Nodes {
 		buf.WriteString(getNodeText(n))
 	}
-	return buf.String()
+	return strings.TrimSpace(buf.String())
 }
 
 // Get the specified node's text content.
@@ -32,6 +32,9 @@ func getNodeText(node *html.Node) string {
 		text := normalizeWhitespace(node.Data)
 		if node.NextSibling == nil || isBlock(node.NextSibling) {
 			text = strings.TrimRightFunc(text, unicode.IsSpace)
+		}
+		if isBlock(node.NextSibling) {
+			text = text + "\n\n"
 		}
 		if isBlock(node.PrevSibling) {
 			text = strings.TrimLeftFunc(text, unicode.IsSpace)
@@ -59,14 +62,14 @@ func getNodeText(node *html.Node) string {
 		}
 		return fmt.Sprintf("[%s](%s)", text, href)
 	}
-	//buf.WriteString("=> " + node.Data)
+	//buf.WriteString("=> " + node.Data + "|")
 	if isHeader(node) {
 		buf.WriteString("# ")
 	}
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		buf.WriteString(getNodeText(c))
 	}
-	if node.Data == "p" || isHeader(node) {
+	if isBlock(node) {
 		buf.WriteString("\n\n")
 	}
 	return buf.String()
