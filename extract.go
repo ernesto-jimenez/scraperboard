@@ -1,8 +1,9 @@
 package scraperboard
 
 import (
-	"github.com/mitchellh/mapstructure"
 	"io"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 // ExtractFromURL scrapes the HTML served in the specified URL into a golang struct

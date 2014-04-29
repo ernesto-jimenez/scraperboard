@@ -94,6 +94,12 @@ func TestScrapeEachAndProperties(t *testing.T) {
 	}
 }
 
+func fatalIfError(t *testing.T, err error) {
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestJsonFromResult(t *testing.T) {
 	assertResultFor(t, "title_and_list_links")
 }

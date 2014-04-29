@@ -4,15 +4,17 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/golang/glog"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/golang/glog"
 )
 
 // NewScraperFromString constructs a Scraper based on the XML passed as a string
@@ -190,6 +192,19 @@ func (f *Filter) run(val interface{}) (result interface{}, err error) {
 		result = val.(*goquery.Selection).Text()
 	case "attr":
 		result, _ = val.(*goquery.Selection).Attr(f.Argument)
+	case "exists":
+		count := val.(*goquery.Selection).Length()
+		if count > 0 {
+			result = "true"
+		} else {
+			result = "false"
+		}
+	case "queryParameter":
+		var uri *url.URL
+		uri, err = url.Parse(val.(string))
+		result = uri.Query().Get(f.Argument)
+	case "html":
+		result, _ = val.(*goquery.Selection).Html()
 	case "regex":
 		exp := regexp.MustCompile(f.Argument)
 		result = exp.FindAllStringSubmatch(val.(string), 1)[0][1]

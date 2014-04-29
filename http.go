@@ -20,7 +20,7 @@ func (s *Scraper) NewHTTPHandlerFunc(getURL func(*http.Request) string) http.Han
 			return
 		}
 
-		w.Header().Set("Content-Type", "text/json")
+		w.Header().Set("Content-Type", "text/json; charset=UTF-8")
 		w.Write(out)
 	}
 }
