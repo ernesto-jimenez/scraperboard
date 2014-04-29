@@ -5,17 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
-	"runtime/debug"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/golang/glog"
 )
+
+var debuglog = log.New(os.Stderr, "SCRAPER DEBUG - ", log.LstdFlags)
 
 // NewScraperFromString constructs a Scraper based on the XML passed as a string
 func NewScraperFromString(str string) (Scraper, error) {
@@ -94,6 +95,14 @@ func (s *Scraper) scrape(doc *goquery.Document) (result map[string]interface{}, 
 		result[k] = v
 	}
 
+	for _, property := range s.ArrayPropertyList {
+		k, v, err = property.scrape(sel)
+		if err != nil {
+			return
+		}
+		result[k] = v
+	}
+
 	if s.Name != "" {
 		result = map[string]interface{}{s.Name: result}
 	}
@@ -106,16 +115,12 @@ func (s *Each) scrape(sel *goquery.Selection) (key string, value []map[string]in
 	value = make([]map[string]interface{}, find.Size())
 
 	find.Each(func(i int, sel *goquery.Selection) {
-		glog.Infof("Processing %s/%d", s.Name, i)
-		if glog.V(3) {
-			html, _ := sel.Html()
-			glog.Infoln(html)
-		}
+		debuglog.Printf("Processing %s/%d", s.Name, i)
 		value[i] = make(map[string]interface{})
 		for _, property := range s.PropertyList {
 			k, v, err := property.scrape(sel)
 			if err != nil {
-				glog.Error(err)
+				log.Print(err)
 			} else {
 				value[i][k] = v
 			}
@@ -128,16 +133,11 @@ func (s *Property) scrape(sel *goquery.Selection) (key string, value interface{}
 	key = s.Name
 	find := sel.Find(s.Selector)
 	value = find
-	glog.Infof("Property %v from %v", s.Name, value)
+	debuglog.Printf("Property %v from %v", s.Name, value)
 
 	if find.Length() == 0 {
-		glog.Info("No matches for ", s.Selector)
+		debuglog.Print("No matches for ", s.Selector)
 		value = nil
-		return
-	}
-
-	if len(s.Map.FilterList) > 0 {
-		value, err = s.Map.scrape(find)
 		return
 	}
 
@@ -147,27 +147,26 @@ func (s *Property) scrape(sel *goquery.Selection) (key string, value interface{}
 
 	defer func() {
 		if r := recover(); r != nil {
-			glog.Error(r)
-			glog.V(2).Infof("%s\n", debug.Stack())
+			log.Panic(r)
 		}
 	}()
 
-	glog.Infof("Passing filters on %v", s.Name)
+	debuglog.Printf("Passing filters on %v", s.Name)
 	for _, filter := range s.FilterList {
 		value, err = filter.run(value)
 		if err != nil {
 			return
 		}
 	}
-	glog.Infof("Property %v: %v", s.Name, value)
+	debuglog.Printf("Property %v: %v", s.Name, value)
 	return
 }
 
-func (s *Map) scrape(sel *goquery.Selection) (value interface{}, err error) {
-	value = sel.Map(func(i int, selection *goquery.Selection) string {
-		glog.Infof("Entry %i: %#v", i, selection)
-		a, b := selection.Html()
-		glog.Infof("%#v, %#v", a, b)
+func (s *ArrayProperty) scrape(sel *goquery.Selection) (key string, value interface{}, err error) {
+	key = s.Name
+	total := sel.Length()
+	value = sel.Find(s.Selector).Map(func(i int, selection *goquery.Selection) string {
+		debuglog.Printf("Scraping %s[%d/%d]", s.Name, i, total)
 		var val interface{}
 		val = selection
 		for _, filter := range s.FilterList {
@@ -217,7 +216,7 @@ func (f *Filter) run(val interface{}) (result interface{}, err error) {
 	default:
 		err = errors.New("Unknown filter " + f.Type)
 	}
-	glog.Infof("FILTER %s (%s): %#v", f.Type, f.Argument, result)
+	debuglog.Printf("FILTER \"%s\" (%s): %#v", f.Type, f.Argument, result)
 	return
 }
 
@@ -231,8 +230,9 @@ func defaultFilterList() []Filter {
 // Scraper defines a scraper template to extract structured data from HTML documents
 type Scraper struct {
 	Property
-	EachList     []Each     `xml:"Each"`
-	PropertyList []Property `xml:"Property"`
+	EachList          []Each          `xml:"Each"`
+	PropertyList      []Property      `xml:"Property"`
+	ArrayPropertyList []ArrayProperty `xml:"ArrayProperty"`
 }
 
 // Each tags allow you to extract arrays of structured data (e.g: lists of reviews)
@@ -247,11 +247,11 @@ type Property struct {
 	Name       string   `xml:"name,attr"`
 	Selector   string   `xml:"selector,attr"`
 	FilterList []Filter `xml:"Filter"`
-	Map        Map      `xml:"Map"`
 }
 
-// Map is used to produce array properties
-type Map struct {
+// ArrayProperty is used to extract array properties
+type ArrayProperty struct {
+	Property
 	FilterList []Filter `xml:"Filter"`
 }
 
