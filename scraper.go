@@ -3,6 +3,7 @@ package scraperboard
 import (
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/golang/glog"
 	"io"
@@ -112,9 +113,10 @@ func (s *Each) scrape(sel *goquery.Selection) (key string, value []map[string]in
 		for _, property := range s.PropertyList {
 			k, v, err := property.scrape(sel)
 			if err != nil {
-				return
+				glog.Error(err)
+			} else {
+				value[i][k] = v
 			}
-			value[i][k] = v
 		}
 	})
 	return
@@ -122,12 +124,18 @@ func (s *Each) scrape(sel *goquery.Selection) (key string, value []map[string]in
 
 func (s *Property) scrape(sel *goquery.Selection) (key string, value interface{}, err error) {
 	key = s.Name
-	value = sel.Find(s.Selector)
+	find := sel.Find(s.Selector)
+	value = find
 	glog.Infof("Property %v from %v", s.Name, value)
 
-	if sel.Find(s.Selector).Length() == 0 {
+	if find.Length() == 0 {
 		glog.Info("No matches for ", s.Selector)
 		value = nil
+		return
+	}
+
+	if len(s.Map.FilterList) > 0 {
+		value, err = s.Map.scrape(find)
 		return
 	}
 
@@ -153,11 +161,31 @@ func (s *Property) scrape(sel *goquery.Selection) (key string, value interface{}
 	return
 }
 
+func (s *Map) scrape(sel *goquery.Selection) (value interface{}, err error) {
+	value = sel.Map(func(i int, selection *goquery.Selection) string {
+		glog.Infof("Entry %i: %#v", i, selection)
+		a, b := selection.Html()
+		glog.Infof("%#v, %#v", a, b)
+		var val interface{}
+		val = selection
+		for _, filter := range s.FilterList {
+			if err != nil {
+				return ""
+			}
+			val, err = filter.run(val)
+		}
+		return val.(string)
+	})
+	return
+}
+
 // TODO: Refactor filters using reflection to avoid type casting
 func (f *Filter) run(val interface{}) (result interface{}, err error) {
 	switch f.Type {
 	case "first":
 		result = val.(*goquery.Selection).First()
+	case "last":
+		result = val.(*goquery.Selection).Last()
 	case "text":
 		result = val.(*goquery.Selection).Text()
 	case "attr":
@@ -165,12 +193,14 @@ func (f *Filter) run(val interface{}) (result interface{}, err error) {
 	case "regex":
 		exp := regexp.MustCompile(f.Argument)
 		result = exp.FindAllStringSubmatch(val.(string), 1)[0][1]
+	case "stringf":
+		result = fmt.Sprintf(f.Argument, val.(string))
 	case "parseDate":
 		result, err = time.Parse(f.Argument, val.(string))
 	default:
 		err = errors.New("Unknown filter " + f.Type)
 	}
-	glog.Infof("FILTER %s (%s): %v", f.Type, f.Argument, result)
+	glog.Infof("FILTER %s (%s): %#v", f.Type, f.Argument, result)
 	return
 }
 
@@ -199,6 +229,12 @@ type Each struct {
 type Property struct {
 	Name       string   `xml:"name,attr"`
 	Selector   string   `xml:"selector,attr"`
+	FilterList []Filter `xml:"Filter"`
+	Map        Map      `xml:"Map"`
+}
+
+// Map is used to produce array properties
+type Map struct {
 	FilterList []Filter `xml:"Filter"`
 }
 
