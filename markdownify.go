@@ -60,6 +60,9 @@ func getNodeText(node *html.Node) string {
 		if !exists {
 			return text
 		}
+		if strings.TrimSpace(text) == "" {
+			return " "
+		}
 		return fmt.Sprintf("[%s](%s)", text, href)
 	}
 	//buf.WriteString("=> " + node.Data + "|")
