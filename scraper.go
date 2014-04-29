@@ -190,6 +190,8 @@ func (f *Filter) run(val interface{}) (result interface{}, err error) {
 		result = val.(*goquery.Selection).Last()
 	case "text":
 		result = val.(*goquery.Selection).Text()
+	case "markdown":
+		result = markdownify(val.(*goquery.Selection))
 	case "attr":
 		result, _ = val.(*goquery.Selection).Attr(f.Argument)
 	case "exists":
