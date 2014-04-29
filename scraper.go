@@ -117,7 +117,17 @@ func (s *Each) scrape(sel *goquery.Selection) (key string, value []map[string]in
 	find.Each(func(i int, sel *goquery.Selection) {
 		debuglog.Printf("Processing %s/%d", s.Name, i)
 		value[i] = make(map[string]interface{})
+
 		for _, property := range s.PropertyList {
+			k, v, err := property.scrape(sel)
+			if err != nil {
+				log.Print(err)
+			} else {
+				value[i][k] = v
+			}
+		}
+
+		for _, property := range s.ArrayPropertyList {
 			k, v, err := property.scrape(sel)
 			if err != nil {
 				log.Print(err)
@@ -133,7 +143,7 @@ func (s *Property) scrape(sel *goquery.Selection) (key string, value interface{}
 	key = s.Name
 	find := sel.Find(s.Selector)
 	value = find
-	debuglog.Printf("Property %v from %v", s.Name, value)
+	debuglog.Printf("Property %v from %v matches", s.Name, find.Length())
 
 	if find.Length() == 0 {
 		debuglog.Print("No matches for ", s.Selector)
@@ -238,8 +248,9 @@ type Scraper struct {
 // Each tags allow you to extract arrays of structured data (e.g: lists of reviews)
 type Each struct {
 	Property
-	sortBy       string     `xml:"sortBy,attr"`
-	PropertyList []Property `xml:"Property"`
+	sortBy            string          `xml:"sortBy,attr"`
+	PropertyList      []Property      `xml:"Property"`
+	ArrayPropertyList []ArrayProperty `xml:"ArrayProperty"`
 }
 
 // Property defines a property to be extracted
