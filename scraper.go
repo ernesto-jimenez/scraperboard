@@ -16,7 +16,41 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var debuglog = log.New(os.Stderr, "SCRAPER DEBUG - ", log.LstdFlags)
+type DebugLogger interface {
+	Printf(format string, v ...interface{})
+	Print(v ...interface{})
+}
+
+type debugger struct {
+	logger DebugLogger
+	debug  bool
+}
+
+func (d *debugger) Printf(str string, v ...interface{}) {
+	if d.debug {
+		d.logger.Printf(str, v...)
+	}
+}
+
+func (d *debugger) Print(v ...interface{}) {
+	if d.debug {
+		d.logger.Print(v...)
+	}
+}
+
+var debuglog = &debugger{
+	logger: log.New(os.Stderr, "SCRAPER DEBUG - ", log.LstdFlags),
+}
+
+// Set boolean flag to enable logging
+func Debug(debug bool) {
+	debuglog.debug = debug
+}
+
+// Sets the debug logger. By default it logs to STDERR
+func DefaultDebugLogger(logger DebugLogger) {
+	debuglog.logger = logger
+}
 
 // NewScraperFromString constructs a Scraper based on the XML passed as a string
 func NewScraperFromString(str string) (Scraper, error) {
