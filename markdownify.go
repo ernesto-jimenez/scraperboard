@@ -5,6 +5,7 @@ package scraperboard
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"unicode"
@@ -12,6 +13,16 @@ import (
 	"code.google.com/p/go.net/html"
 	"github.com/PuerkitoBio/goquery"
 )
+
+// MarkdownifyReader takes a io.Reader with HTML and returns the text in Markdown
+func MarkdownifyReader(r io.Reader) (string, error) {
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		return "", err
+	}
+	selection := doc.Selection
+	return strings.TrimSpace(markdownify(selection)), nil
+}
 
 func markdownify(s *goquery.Selection) string {
 	var buf bytes.Buffer
