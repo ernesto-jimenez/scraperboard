@@ -25,6 +25,30 @@ func TestMarkdownifyReader(t *testing.T) {
 	}
 }
 
+func TestMarkdownifyEmptyString(t *testing.T) {
+	actual, err := MarkdownifyReader(strings.NewReader(""))
+	fatalIfError(t, err)
+
+	expected := ""
+
+	if actual != expected {
+		t.Fatalf("Expected: %#v\n\tGot: %#v", expected, actual)
+	}
+}
+
+func TestMarkdownifyBrAsLastChild(t *testing.T) {
+	str := "<span>content <br /></span>"
+
+	actual, err := MarkdownifyReader(strings.NewReader(str))
+	fatalIfError(t, err)
+
+	expected := "content"
+
+	if actual != expected {
+		t.Fatalf("Expected: %#v\n\tGot: %#v", expected, actual)
+	}
+}
+
 func TestMarkdownConvert(t *testing.T) {
 	file, err := os.Open("testdata/markdown.html")
 	fatalIfError(t, err)

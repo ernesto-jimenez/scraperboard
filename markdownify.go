@@ -54,10 +54,10 @@ func getNodeText(node *html.Node) string {
 	}
 	// change BRs to spaces unless it has two in which case we add extra
 	if node.Data == "br" {
-		if node.NextSibling.Data == "br" {
+		if node.NextSibling != nil && node.NextSibling.Data == "br" {
 			return "\n\n"
 		}
-		if node.PrevSibling.Data == "br" {
+		if node.PrevSibling != nil && node.PrevSibling.Data == "br" {
 			return ""
 		}
 		return " "
