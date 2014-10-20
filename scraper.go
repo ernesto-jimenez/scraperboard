@@ -252,7 +252,12 @@ func (f *Filter) run(val interface{}) (result interface{}, err error) {
 		result, _ = val.(*goquery.Selection).Html()
 	case "regex":
 		exp := regexp.MustCompile(f.Argument)
-		result = exp.FindAllStringSubmatch(val.(string), 1)[0][1]
+		matches := exp.FindAllStringSubmatch(val.(string), 1)
+		if matches != nil && len(matches) > 0 {
+			if len(matches[0]) > 1 {
+				result = matches[0][1]
+			}
+		}
 	case "stringf":
 		result = fmt.Sprintf(f.Argument, val.(string))
 	case "parseDate":
