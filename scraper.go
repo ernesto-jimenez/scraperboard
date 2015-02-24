@@ -287,7 +287,7 @@ type Scraper struct {
 // Each tags allow you to extract arrays of structured data (e.g: lists of reviews)
 type Each struct {
 	Property
-	sortBy            string          `xml:"sortBy,attr"`
+	SortBy            string          `xml:"sortBy,attr"`
 	PropertyList      []Property      `xml:"Property"`
 	ArrayPropertyList []ArrayProperty `xml:"ArrayProperty"`
 }
