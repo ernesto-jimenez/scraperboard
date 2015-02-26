@@ -175,7 +175,10 @@ func (s *Each) scrape(sel *goquery.Selection) (key string, value []map[string]in
 
 func (s *Property) scrape(sel *goquery.Selection) (key string, value interface{}, err error) {
 	key = s.Name
-	find := sel.Find(s.Selector)
+	find := sel
+	if s.Selector != "" {
+		find = sel.Find(s.Selector)
+	}
 	value = find
 	debuglog.Printf("Property %v from %v matches", s.Name, find.Length())
 
