@@ -16,13 +16,13 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type DebugLogger interface {
+type debugLogger interface {
 	Printf(format string, v ...interface{})
 	Print(v ...interface{})
 }
 
 type debugger struct {
-	logger DebugLogger
+	logger debugLogger
 	debug  bool
 }
 
@@ -42,13 +42,13 @@ var debuglog = &debugger{
 	logger: log.New(os.Stderr, "SCRAPER DEBUG - ", log.LstdFlags),
 }
 
-// Set boolean flag to enable logging
+// Debug sets boolean flag to enable logging
 func Debug(debug bool) {
 	debuglog.debug = debug
 }
 
-// Sets the debug logger. By default it logs to STDERR
-func DefaultDebugLogger(logger DebugLogger) {
+// DefaultDebugLogger sets the debug logger. By default it logs to STDERR
+func DefaultDebugLogger(logger debugLogger) {
 	debuglog.logger = logger
 }
 
