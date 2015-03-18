@@ -52,7 +52,7 @@ func main() {
 	}
 
 	http.HandleFunc("/search", scraper.NewHTTPHandlerFunc(getUrl))
-	fmt.Println("Started API server. You can test it in http://0.0.0.0:12345/search?q=scraperboard")
+	fmt.Println("Started API server. You can test it in http://localhost:12345/search?q=scraperboard")
 	err = http.ListenAndServe(":12345", nil)
 	if err != nil {
 		fmt.Println("ListenAndServe: ", err)
